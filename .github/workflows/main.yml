@@ -1,0 +1,44 @@
+name: Build
+
+
+on:
+  push:
+    branches:
+      - main*
+      - dev*
+      - fix-bug*
+      - master*
+      - feature*
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: setup jdk11
+      uses: actions/setup-java@v2.2.0
+      with:
+        java-version: 11
+        distribution: adopt-hotspot
+        
+    - uses: actions/cache@v2
+      with:
+       path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+       key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+       restore-keys: |
+         ${{ runner.os }}-gradle-    
+         
+    # make ./gradlew executable     
+    - run: chmod +x gradlew        
+    
+    - name: Build 
+      run: |
+        ./gradlew bootBuildImage
